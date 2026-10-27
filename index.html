@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UniRepo — Цифровая преемственность</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #0B2447;
+            --accent: #00C2D1;
+            --bg: #F0F4F8;
+            --card: #FFFFFF;
+            --text: #111827;
+            --text-secondary: #6B7280;
+            --border: #D1D9E6;
+            --shadow: 0 4px 6px -1px rgba(11, 36, 71, 0.08);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .header-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .logo { font-size: 1.25rem; font-weight: 700; }
+        .logo span { color: var(--accent); }
+
+        .desktop-nav { display: none; gap: 6px; }
+        @media (min-width: 768px) { .desktop-nav { display: flex; } }
+        .desktop-nav button {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,.72);
+            padding: 8px 14px;
+            border-radius: 8px;
+            font: 500 .85rem 'Inter', sans-serif;
+            cursor: pointer;
+            transition: .2s;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+        .desktop-nav button:hover { background: rgba(255,255,255,.1); color: #fff; }
+        .desktop-nav button.active { background: var(--accent); color: var(--primary); }
+
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 0 16px;
+            position: sticky;
+            top: 56px;
+            z-index: 90;
+            scrollbar-width: none;
+        }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab {
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+        .container { padding: 16px; max-width: 1200px; margin: 0 auto; }
+        .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        @media (min-width: 768px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (min-width: 1024px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .card:active { transform: scale(0.98); }
+        @media (hover: hover) { .card:hover { transform: translateY(-2px); } }
+
+        .card-media {
+            height: 180px;
+            background: #E5E7EB;
+            position: relative;
+            overflow: hidden;
+        }
+        .card-media model-viewer { width: 100%; height: 100%; background: #f8f9fa; }
+        .card-media img { width: 100%; height: 100%; object-fit: cover; }
+        .card-media .code-preview {
+            background: #1E1E1E;
+            color: #9CDCFE;
+            font-family: monospace;
+            font-size: 0.75rem;
+            padding: 16px;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #10B981;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
+
+        .card-body { padding: 16px; }
+        .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 6px; }
+        .card-meta { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 10px; }
+        .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            background: rgba(0, 194, 209, 0.1);
+            color: var(--accent);
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        .tag.cad { background: #FEF3C7; color: #D97706; }
+        .tag.code { background: #F3E8FF; color: #7C3AED; }
+        .tag.design { background: #FCE7F3; color: #DB2777; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11, 36, 71, 0.5);
+            z-index: 200;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            border-radius: 16px 16px 0 0;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+            position: relative;
+            touch-action: pan-y;
+        }
+        @media (min-width: 768px) {
+            .modal-overlay { align-items: center; }
+            .modal { 
+                border-radius: 16px; 
+                height: 90vh;
+                max-height: 850px;
+                max-width: 1100px;
+            }
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .modal::before {
+            content: '';
+            position: sticky;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            margin: 12px 0;
+            z-index: 10;
+        }
+        @media (min-width: 768px) { .modal::before { display: none; } }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+        .modal-header h3 { font-size: 1.2rem; color: var(--primary); }
+        .modal-close { 
+            background: none; 
+            border: none; 
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            color: var(--text-secondary);
+            padding: 8px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .modal-close:hover { 
+            background: var(--bg);
+            color: var(--primary);
+        }
+        .modal-content { padding: 20px; }
+
+        .viewer-3d {
+            width: 100%;
+            height: 300px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .model-switcher {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .model-btn {
+            padding: 8px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .model-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .project-desc {
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .specs-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+        .specs-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .specs-table td:first-child {
+            color: var(--text-secondary);
+            width: 40%;
+        }
+
+        .team-block {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 16px;
+        }
+        .team-block h4 {
+            font-size: 0.9rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .member {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .member:last-child { border-bottom: none; }
+        .member-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .member-info { flex: 1; }
+        .member-name { font-size: 0.9rem; font-weight: 600; color: var(--primary); }
+        .member-role { font-size: 0.78rem; color: var(--text-secondary); }
+
+        .pdf-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            margin-top: 8px;
+            margin-right: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .pdf-btn:hover { opacity: 0.9; }
+
+        .pdf-viewer-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(11, 36, 71, 0.7);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .pdf-viewer-modal.active { display: flex; }
+        .pdf-container {
+            background: white;
+            width: 100%;
+            max-width: 1000px;
+            height: 90vh;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .pdf-header {
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+        }
+        .pdf-header h3 { font-size: 1rem; color: var(--primary); }
+        .pdf-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .pdf-canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        .pdf-canvas-container canvas {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+        .pdf-loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        .pdf-loading i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .code-block {
+            background: #1E1E1E;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+        .code-block pre { margin: 0; }
+        .code-block code { font-size: 0.85rem; }
+
+        .diagram-container {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .diagram-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+        @media (min-width: 768px) { .bottom-nav { display: none; } }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            gap: 4px;
+        }
+        .nav-item.active { color: var(--accent); }
+        .nav-item i { font-size: 1.2rem; }
+
+        /* Разделы сайта */
+        [hidden] { display: none !important; }
+        .page-heading { margin: 8px 0 20px; }
+        .page-heading h1 { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .page-heading p { font-size: .9rem; color: var(--text-secondary); margin-top: 4px; }
+        .page-heading-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .page-heading-row .page-heading { margin: 0; }
+        .btn-primary, .btn-secondary {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 16px; border-radius: 8px;
+            font: 500 .88rem 'Inter', sans-serif;
+            cursor: pointer; transition: .2s; border: 1px solid transparent;
+            flex-shrink: 0;
+        }
+        .btn-primary { background: var(--accent); color: #04252b; }
+        .btn-primary:hover { opacity: .9; }
+        .btn-secondary { background: var(--bg); color: var(--primary); border-color: var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); }
+        .stats-row {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-bottom: 24px;
+        }
+        .stat-box {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px 8px; text-align: center;
+        }
+        .stat-value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: .72rem; color: var(--text-secondary); margin-top: 2px; }
+        .subheading { font-size: 1rem; font-weight: 600; color: var(--primary); margin: 22px 0 12px; }
+        .empty-card {
+            border: 1px dashed var(--border); border-radius: 12px;
+            background: rgba(255,255,255,.65); padding: 28px 20px;
+            text-align: center; color: var(--text-secondary);
+        }
+        .empty-card i { display: block; font-size: 1.8rem; color: var(--accent); margin-bottom: 10px; }
+        .empty-card h4 { color: var(--text); font-size: .95rem; margin-bottom: 6px; }
+        .empty-card p { font-size: .85rem; }
+        .team-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px; box-shadow: var(--shadow);
+        }
+        .team-icon {
+            width: 44px; height: 44px; border-radius: 10px;
+            background: rgba(0,194,209,.12); color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; margin-bottom: 12px;
+        }
+        .team-card h3 { font-size: 1.05rem; color: var(--primary); margin-bottom: 4px; }
+        .team-direction { font-size: .8rem; color: var(--text-secondary); }
+        .avatar-stack { display: flex; margin: 14px 0 4px; }
+        .avatar {
+            width: 34px; height: 34px; border-radius: 50%;
+            background: var(--primary); color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .7rem; font-weight: 600;
+            border: 2px solid #fff; margin-left: -8px;
+        }
+        .avatar:first-child { margin-left: 0; }
+        .avatar.empty { background: var(--bg); color: var(--text-secondary); border: 1px dashed var(--border); }
+        .team-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; margin-top: 14px; flex-wrap: wrap;
+        }
+        .team-status { font-size: .75rem; color: #10B981; display: flex; align-items: center; gap: 6px; }
+        .member-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
+        }
+        .member-row:last-child { border-bottom: none; }
+        .member-row .member-name { font-size: .9rem; font-weight: 600; color: var(--primary); }
+        .member-row .member-role { font-size: .78rem; color: var(--text-secondary); }
+        .profile-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden; margin-bottom: 20px;
+        }
+        .profile-cover {
+            height: 110px;
+            background: linear-gradient(120deg, var(--primary) 0%, #143c6b 60%, var(--accent) 140%);
+        }
+        .profile-main { padding: 0 20px 20px; }
+        .profile-avatar {
+            width: 76px; height: 76px; border-radius: 50%;
+            background: var(--bg); border: 4px solid #fff; color: var(--primary);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; margin-top: -38px; position: relative;
+        }
+        .profile-name { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-top: 10px; }
+        .profile-role { font-size: .85rem; color: var(--text-secondary); margin-top: 2px; }
+        .profile-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .skill-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+        .achievement {
+            display: flex; gap: 12px; align-items: center;
+            padding: 14px; border: 1px solid var(--border);
+            border-radius: 10px; background: var(--card); margin-bottom: 10px;
+        }
+        .achievement > i { font-size: 1.3rem; color: var(--accent); }
+        .achievement.locked { opacity: .5; }
+        .achievement.locked > i { color: var(--text-secondary); }
+        .achievement b { display: block; font-size: .9rem; color: var(--primary); }
+        .achievement span { font-size: .78rem; color: var(--text-secondary); }
+        .activity-item {
+            display: flex; gap: 12px; padding: 12px 0;
+            border-bottom: 1px solid var(--border); font-size: .85rem;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-item i { color: var(--accent); margin-top: 4px; }
+        .activity-item small { display: block; color: var(--text-secondary); font-size: .75rem; margin-top: 2px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: .85rem; color: var(--text-secondary); margin-bottom: 6px; }
+        .form-control {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+            border-radius: 8px; font: .9rem 'Inter', sans-serif;
+            background: var(--bg); color: var(--text);
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(0, 194, 209, 0.15);
+        }
+        textarea.form-control { min-height: 90px; resize: vertical; }
+        .toast {
+            position: fixed; bottom: 90px; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--primary); color: #fff;
+            padding: 12px 20px; border-radius: 10px;
+            font-size: .85rem; z-index: 400; opacity: 0;
+            pointer-events: none; transition: .3s;
+            max-width: 90%; text-align: center;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        @media (min-width: 768px) { .toast { bottom: 30px; } }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo">Uni<span>Repo</span></div>
+            <nav class="desktop-nav">
+                <button data-page="feed" class="active"><i class="fas fa-home"></i> Лента</button>
+                <button data-page="mine"><i class="fas fa-folder-plus"></i> Мои</button>
+                <button data-page="teams"><i class="fas fa-users"></i> Команды</button>
+                <button data-page="profile"><i class="fas fa-user"></i> Профиль</button>
+            </nav>
+        </div>
+    </header>
+
+    <div class="tabs" id="feed-tabs">
+        <div class="tab active" data-filter="all">Все проекты</div>
+        <div class="tab" data-filter="engineering">Инжиниринг</div>
+        <div class="tab" data-filter="it">IT & Код</div>
+        <div class="tab" data-filter="design">Дизайн</div>
+    </div>
+
+    <main class="container page" id="page-feed">
+        <h2 class="section-title">Проекты</h2>
+        
+        <div class="grid" id="projects-grid">
+            
+            <!-- Project 01: Универсальная насадка -->
+            <div class="card" data-categories="engineering" onclick="openModal('modal-01')">
+                <div class="card-media">
+                    <img src="projects/project-01-universal-gripper-tm5/images/preview.png" alt="Универсальная насадка" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#6B7280;\'>3D модель</div>'">
+                    <div class="badge">Завершён</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Универсальная насадка для TM5-700</div>
+                    <div class="card-meta">Модульное захватное устройство</div>
+                    <div class="tags">
+                        <span class="tag cad">КОМПАС-3D</span>
+                        <span class="tag">Байонетное соединение</span>
+                        <span class="tag">Электроника</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 02: Модульный конструктор -->
+            <div class="card" data-categories="engineering design" onclick="openModal('modal-02')">
+                <div class="card-media">
+                    <img src="projects/project-02-modular-constructor/images/preview.png" alt="Модульный конструктор" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#6B7280;\'>3D модель</div>'">
+                    <div class="badge">Завершён</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Модульный конструктор</div>
+                    <div class="card-meta">Презентационная программа для манипуляторов</div>
+                    <div class="tags">
+                        <span class="tag cad">КОМПАС-3D</span>
+                        <span class="tag design">Дизайн</span>
+                        <span class="tag">TM Flow</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 03: Механический манипулятор -->
+            <div class="card" data-categories="engineering" onclick="openModal('modal-03')">
+                <div class="card-media">
+                    <img src="projects/project-03-mechanical-manipulator/images/preview.png" alt="Механический манипулятор" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#6B7280;\'>3D модель</div>'">
+                    <div class="badge">Завершён</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Механический манипулятор</div>
+                    <div class="card-meta">Четырёхосевой с планетарным редуктором</div>
+                    <div class="tags">
+                        <span class="tag cad">КОМПАС-3D</span>
+                        <span class="tag">Зубчатые передачи</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 04: Электромеханический манипулятор -->
+            <div class="card" data-categories="engineering" onclick="openModal('modal-04')">
+                <div class="card-media">
+                    <img src="projects/project-04-electromechanical-manipulator/images/preview.png" alt="Электромеханический манипулятор" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#6B7280;\'>3D модель</div>'">
+                    <div class="badge">Завершён</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Электромеханический манипулятор</div>
+                    <div class="card-meta">Трёхосевой с электронной платой управления</div>
+                    <div class="tags">
+                        <span class="tag cad">КОМПАС-3D</span>
+                        <span class="tag code">Электроника</span>
+                        <span class="tag">Шаговые двигатели</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 05: techman-js -->
+            <div class="card" data-categories="it" onclick="openModal('modal-05')">
+                <div class="card-media">
+                    <div class="code-preview">
+                        <span style="color: #C586C0;">import</span> { TMScriptConnection } <span style="color: #C586C0;">from</span> <span style="color: #CE9178;">'techman-js'</span>;<br><br>
+                        <span style="color: #C586C0;">const</span> <span style="color: #4FC1FF;">robot</span> = <span style="color: #C586C0;">new</span> <span style="color: #DCDCAA;">TMScriptConnection</span>(<span style="color: #CE9178;">'192.168.1.10'</span>);<br>
+                        <span style="color: #C586C0;">await</span> robot.<span style="color: #DCDCAA;">connect</span>();<br>
+                        <span style="color: #C586C0;">await</span> robot.client.<span style="color: #DCDCAA;">ptp</span>([<span style="color: #B5CEA8;">0</span>, <span style="color: #B5CEA8;">0</span>, <span style="color: #B5CEA8;">90</span>], <span style="color: #CE9178;">'JPP'</span>);
+                    </div>
+                    <div class="badge">v2.0.3</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">techman-js</div>
+                    <div class="card-meta">TypeScript библиотека для управления TM5-700</div>
+                    <div class="tags">
+                        <span class="tag code">TypeScript</span>
+                        <span class="tag code">NodeJS</span>
+                        <span class="tag">TCP/IP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 06: TMWriter -->
+            <div class="card" data-categories="it design" onclick="openModal('modal-06')">
+                <div class="card-media">
+                    <img src="projects/project-06-tmwriter/design/interface-screenshot.svg" alt="TMWriter интерфейс" style="background: #F8FAFD;" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#6B7280;\'>Интерфейс</div>'">
+                    <div class="badge">v2.0.1</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">TMWriter</div>
+                    <div class="card-meta">Веб-приложение для управления роботом-графопостроителем</div>
+                    <div class="tags">
+                        <span class="tag code">TypeScript</span>
+                        <span class="tag code">Express</span>
+                        <span class="tag design">UI/UX</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project 07: Дизайн-портфолио -->
+            <div class="card" data-categories="design" onclick="openModal('modal-07')">
+                <div class="card-media">
+                    <img src="projects/project-07-design-portfolio/images/preview.png" alt="Отчет-портфолио" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%;color:#6B7280;\'>Портфолио</div>'">
+                    <div class="badge">Завершён</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Отчет-портфолио</div>
+                    <div class="card-meta">Промышленные роботы-манипуляторы</div>
+                    <div class="tags">
+                        <span class="tag design">Инфографика</span>
+                        <span class="tag design">Верстка</span>
+                        <span class="tag">PDF</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Демонстрационный: Планетарный редуктор (в самом низу) -->
+            <div class="card" data-categories="engineering" onclick="openModal('modal-demo')">
+                <div class="card-media">
+                    <model-viewer 
+                        src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
+                        alt="Демо модель" 
+                        auto-rotate camera-controls touch-action="pan-y">
+                    </model-viewer>
+                    <div class="badge">Демо</div>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">Планетарный редуктор</div>
+                    <div class="card-meta">Пример отображения проекта</div>
+                    <div class="tags">
+                        <span class="tag cad">КОМПАС-3D</span>
+                        <span class="tag">STEP</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ============ РАЗДЕЛ: МОИ ============ -->
+    <section class="container page" id="page-mine" hidden>
+        <div class="page-heading">
+            <h1>Мои проекты</h1>
+            <p>Проекты и разработки, в которых вы участвуете</p>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box"><div class="stat-value" id="stat-my-total">—</div><div class="stat-label">Проектов</div></div>
+            <div class="stat-box"><div class="stat-value" id="stat-my-done">—</div><div class="stat-label">Завершено</div></div>
+            <div class="stat-box"><div class="stat-value" id="stat-my-teams">—</div><div class="stat-label">Команд</div></div>
+        </div>
+
+        <h3 class="subheading">Участие в проектах</h3>
+        <div id="my-projects-list">
+            <div class="empty-card">
+                <i class="fas fa-folder-open"></i>
+                <h4>Список проектов формируется</h4>
+                <p>Здесь появятся работы, к которым вы прикрепилены как участник.</p>
+            </div>
+        </div>
+
+        <h3 class="subheading">Последняя активность</h3>
+        <div class="team-card">
+            <div class="activity-item">
+                <i class="fas fa-code-branch"></i>
+                <div>Обновление проекта<small>Тип и дата события будут добавлены</small></div>
+            </div>
+            <div class="activity-item">
+                <i class="fas fa-file-alt"></i>
+                <div>Загрузка документации<small>Тип и дата события будут добавлены</small></div>
+            </div>
+            <div class="activity-item">
+                <i class="fas fa-user-plus"></i>
+                <div>Вступление в команду<small>Тип и дата события будут добавлены</small></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============ РАЗДЕЛ: КОМАНДЫ ============ -->
+    <section class="container page" id="page-teams" hidden>
+        <div class="page-heading-row">
+            <div class="page-heading">
+                <h1>Команды</h1>
+                <p>Междисциплинарные команды факультета</p>
+            </div>
+            <button class="btn-primary" onclick="openModal('modal-create-team')">
+                <i class="fas fa-plus"></i> Создать команду
+            </button>
+        </div>
+
+        <div class="grid" id="teams-grid"></div>
+
+        <h3 class="subheading">Как строится работа</h3>
+        <div class="team-card">
+            <p class="project-desc" style="margin:0">
+                Инжиниринг отвечает за конструкцию и кинематику, электроника — за привод и управление,
+                IT — за протоколы и программный интерфейс, дизайн — за визуальную подачу результата.
+                Команда собирается под конкретную задачу, а не под учебную группу.
+            </p>
+        </div>
+    </section>
+
+    <!-- ============ РАЗДЕЛ: ПРОФИЛЬ ============ -->
+    <section class="container page" id="page-profile" hidden>
+        <div class="page-heading-row">
+            <div class="page-heading">
+                <h1>Профиль</h1>
+                <p>Участник экосистемы UniRepo</p>
+            </div>
+            <button class="btn-secondary" onclick="openModal('modal-edit-profile')">
+                <i class="fas fa-pen"></i> Редактировать
+            </button>
+        </div>
+
+        <div class="profile-card">
+            <div class="profile-cover"></div>
+            <div class="profile-main">
+                <div class="profile-avatar"><i class="fas fa-user"></i></div>
+                <div class="profile-name" id="profile-name">Новик Матвей</div>
+                <div class="profile-role" id="profile-role">Программист, архитектор ядра</div>
+                <div class="profile-meta">
+                    <span class="tag">ФТФ · ГрГУ им. Янки Купалы</span>
+                    <span class="tag" id="profile-course">3 курс, СДП-РТС-241</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-box"><div class="stat-value">2</div><div class="stat-label">Проекта</div></div>
+            <div class="stat-box"><div class="stat-value">2</div><div class="stat-label">Команды</div></div>
+            <div class="stat-box"><div class="stat-value">1</div><div class="stat-label">Достижений</div></div>
+        </div>
+
+        <h3 class="subheading">О себе</h3>
+        <div class="team-card">
+            <p class="project-desc" id="profile-about" style="margin:0">
+                Руководитель проекта UniRepo. Отвечаю за архитектуру платформы, разработку библиотеки techman-js и приложения TMWriter.
+            </p>
+        </div>
+
+        <h3 class="subheading">Компетенции</h3>
+        <div class="skill-tags" id="profile-skills">
+            <span class="tag code">TypeScript</span>
+            <span class="tag code">NodeJS</span>
+            <span class="tag code">TCP/IP</span>
+            <span class="tag cad">Конструирование</span>
+        </div>
+
+        <h3 class="subheading">Участие в проектах</h3>
+        <div class="team-card">
+            <div class="member-row">
+                <div class="member-avatar" style="margin:0;border:none">НМ</div>
+                <div>
+                    <div class="member-name">techman-js</div>
+                    <div class="member-role">Программист, автор библиотеки</div>
+                </div>
+            </div>
+            <div class="member-row">
+                <div class="member-avatar" style="margin:0;border:none">НМ</div>
+                <div>
+                    <div class="member-name">TMWriter</div>
+                    <div class="member-role">Программист, fullstack-разработка</div>
+                </div>
+            </div>
+            <div class="member-row">
+                <div class="member-avatar" style="margin:0;border:none">НМ</div>
+                <div>
+                    <div class="member-name">UniRepo</div>
+                    <div class="member-role">Руководитель проекта, архитектор</div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="subheading">Достижения</h3>
+        <div class="achievement">
+            <i class="fas fa-medal"></i>
+            <div><b>Первый проект</b><span>Первая работа, опубликованная в UniRepo</span></div>
+        </div>
+        <div class="achievement locked">
+            <i class="fas fa-user-graduate"></i>
+            <div><b>Наставник</b><span>Менторская поддержка младших курсов</span></div>
+        </div>
+        <div class="achievement locked">
+            <i class="fas fa-industry"></i>
+            <div><b>Трансфер на производство</b><span>Внедрение разработки на предприятии</span></div>
+        </div>
+    </section>
+
+    <!-- MODAL: Project 01 -->
+    <div class="modal-overlay" id="modal-01">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Универсальная насадка для TM5-700</h3>
+                <button class="modal-close" onclick="closeModal('modal-01')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <model-viewer 
+                    id="model-01"
+                    src="projects/project-01-universal-gripper-tm5/models/universal-conical-assembly.glb" 
+                    camera-controls touch-action="pan-y" auto-rotate
+                    class="viewer-3d">
+                </model-viewer>
+                <div class="model-switcher">
+                    <button class="model-btn active" onclick="switchModel('01', 'universal-conical-assembly.glb', this)">Сборка</button>
+                    <button class="model-btn" onclick="switchModel('01', 'universal-base.glb', this)">Универсальный захват</button>
+                    <button class="model-btn" onclick="switchModel('01', 'conical.glb', this)">Коническая насадка</button>
+                    <button class="model-btn" onclick="switchModel('01', 'rack-parallel.glb', this)">Реечный захват</button>
+                    <button class="model-btn" onclick="switchModel('01', 'marker-cam.glb', this)">Захват для маркеров</button>
+                    <button class="model-btn" onclick="switchModel('01', 'three-finger-worm.glb', this)">Трёхпальцевый</button>
+                </div>
+
+                <p class="project-desc">
+                    Модульное захватное устройство для промышленного робота TM5-700. Система состоит из универсального базового модуля и четырёх сменных насадок. Все насадки присоединяются через байонетное соединение, передающее крутящий момент от сервопривода, расположенного в базе.
+                </p>
+
+                <div class="team-block">
+                    <h4><i class="fas fa-users"></i> Участники проекта</h4>
+                    <div class="member">
+                        <div class="member-avatar">КЛ</div>
+                        <div class="member-info">
+                            <div class="member-name">Коротинская Лаура</div>
+                            <div class="member-role">Руководитель проекта, электронщик</div>
+                        </div>
+                    </div>
+                    <div class="member">
+                        <div class="member-avatar">КЕ</div>
+                        <div class="member-info">
+                            <div class="member-name">Кольга Евгения</div>
+                            <div class="member-role">Конструктор</div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="specs-table">
+                    <tr><td>Габариты</td><td>95 × 95 × 203 мм</td></tr>
+                    <tr><td>Вес</td><td>~1400 г</td></tr>
+                    <tr><td>Тип соединения</td><td>Байонетное</td></tr>
+                    <tr><td>Тип привода</td><td>Электрический (сервопривод)</td></tr>
+                    <tr><td>Управление</td><td>Кнопочное + беспроводной пульт</td></tr>
+                </table>
+
+                <button class="pdf-btn" onclick="openPdf('projects/project-01-universal-gripper-tm5/docs/drawing-conical.pdf', 'Чертёж конического захвата')">
+                    <i class="fas fa-file-pdf"></i> Чертёж конического захвата
+                </button>
+                <button class="pdf-btn" onclick="openPdf('projects/project-01-universal-gripper-tm5/docs/drawing-marker.pdf', 'Чертёж захвата для маркеров')">
+                    <i class="fas fa-file-pdf"></i> Чертёж захвата для маркеров
+                </button>
+                <button class="pdf-btn" onclick="openPdf('projects/project-01-universal-gripper-tm5/docs/drawing-rack.pdf', 'Чертёж реечного захвата')">
+                    <i class="fas fa-file-pdf"></i> Чертёж реечного захвата
+                </button>
+                <button class="pdf-btn" onclick="openPdf('projects/project-01-universal-gripper-tm5/docs/drawing-three-finger.pdf', 'Чертёж трёхпальцевого захвата')">
+                    <i class="fas fa-file-pdf"></i> Чертёж трёхпальцевого захвата
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Project 02 -->
+    <div class="modal-overlay" id="modal-02">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Модульный конструктор</h3>
+                <button class="modal-close" onclick="closeModal('modal-02')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <model-viewer 
+                    id="model-02"
+                    src="projects/project-02-modular-constructor/models/house-assembled.glb" 
+                    camera-controls touch-action="pan-y" auto-rotate
+                    class="viewer-3d">
+                </model-viewer>
+                <div class="model-switcher">
+                    <button class="model-btn active" onclick="switchModel('02', 'house-assembled.glb', this)">Собранный</button>
+                    <button class="model-btn" onclick="switchModel('02', 'house-exploded.glb', this)">Разобранный</button>
+                </div>
+
+                <p class="project-desc">
+                    Модульный конструктор для демонстрации возможностей сборки промышленными и учебными манипуляторами. Конструкция включает магниты Ø 5 мм для точного позиционирования и систему «Якорь» для независимости от местонахождения базовой площадки. Адаптирован под сборку роботом TM5 с использованием машинного зрения в среде TM Flow.
+                </p>
+
+                <div class="team-block">
+                    <h4><i class="fas fa-users"></i> Участники проекта</h4>
+                    <div class="member">
+                        <div class="member-avatar">КМ</div>
+                        <div class="member-info">
+                            <div class="member-name">Клинковский Марк</div>
+                            <div class="member-role">Конструктор</div>
+                        </div>
+                    </div>
+                    <div class="member">
+                        <div class="member-avatar" style="background: var(--text-secondary)">?</div>
+                        <div class="member-info">
+                            <div class="member-name">Дизайнер</div>
+                            <div class="member-role">Неизвестен</div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="specs-table">
+                    <tr><td>Платформа</td><td>TM5-700, электромеханический, механический</td></tr>
+                    <tr><td>Позиционирование</td><td>Магниты Ø 5 мм</td></tr>
+                    <tr><td>Крепление к поверхности</td><td>Разъёмное соединение + мощные магниты</td></tr>
+                    <tr><td>Программная среда</td><td>TM Flow (машинное зрение)</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Project 03 -->
+    <div class="modal-overlay" id="modal-03">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Механический манипулятор</h3>
+                <button class="modal-close" onclick="closeModal('modal-03')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <model-viewer 
+                    id="model-03"
+                    src="projects/project-03-mechanical-manipulator/models/manipulator-without-cover.glb" 
+                    camera-controls touch-action="pan-y" auto-rotate
+                    class="viewer-3d">
+                </model-viewer>
+                <div class="model-switcher">
+                    <button class="model-btn active" onclick="switchModel('03', 'manipulator-without-cover.glb', this)">Без крышки</button>
+                    <button class="model-btn" onclick="switchModel('03', 'manipulator-with-cover.glb', this)">С крышкой</button>
+                </div>
+
+                <p class="project-desc">
+                    Механический четырёхосевой манипулятор с полностью ручным управлением. Конструкция базируется на системе зубчатых и ременных передач, включая планетарный редуктор в основе привода. Проект включает полноценное проектирование всех узлов, расчёт зубчатых передач и подготовку комплекта конструкторской документации.
+                </p>
+
+                <div class="team-block">
+                    <h4><i class="fas fa-users"></i> Участники проекта</h4>
+                    <div class="member">
+                        <div class="member-avatar">ВМ</div>
+                        <div class="member-info">
+                            <div class="member-name">Вольщук Максим</div>
+                            <div class="member-role">Конструктор</div>
+                        </div>
+                    </div>
+                    <div class="member">
+                        <div class="member-avatar">ВА</div>
+                        <div class="member-info">
+                            <div class="member-name">Волынец Артём</div>
+                            <div class="member-role">Конструктор</div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="specs-table">
+                    <tr><td>Количество осей</td><td>4</td></tr>
+                    <tr><td>Габариты</td><td>440 × 310 × 590 мм</td></tr>
+                    <tr><td>Вес</td><td>~3000 г</td></tr>
+                    <tr><td>Тип передачи</td><td>Зубчатая, ременная</td></tr>
+                    <tr><td>Управление</td><td>Ручное</td></tr>
+                    <tr><td>Максимальная нагрузка</td><td>100 г</td></tr>
+                    <tr><td>Совместимость</td><td>Универсальный модуль для TM5</td></tr>
+                </table>
+
+                <button class="pdf-btn" onclick="openPdf('projects/project-03-mechanical-manipulator/docs/drawing-overall.pdf', 'Сборочный чертёж')">
+                    <i class="fas fa-file-pdf"></i> Сборочный чертёж
+                </button>
+                <button class="pdf-btn" onclick="openPdf('projects/project-03-mechanical-manipulator/docs/drawing-views.pdf', 'Три вида изделия')">
+                    <i class="fas fa-file-pdf"></i> Три вида изделия
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Project 04 -->
+    <div class="modal-overlay" id="modal-04">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Электромеханический манипулятор</h3>
+                <button class="modal-close" onclick="closeModal('modal-04')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <model-viewer 
+                    id="model-04"
+                    src="projects/project-04-electromechanical-manipulator/models/manipulator-assembly.glb" 
+                    camera-controls touch-action="pan-y" auto-rotate
+                    class="viewer-3d">
+                </model-viewer>
+
+                <p class="project-desc">
+                    Электромеханический трёхосевой манипулятор, приводимый в действие шаговыми двигателями. Проект включает полноценное конструирование всех механических узлов, разработку электронной платы управления на дискретных компонентах (без микроконтроллеров) и создание проводного пульта оператора.
+                </p>
+
+                <div class="team-block">
+                    <h4><i class="fas fa-users"></i> Участники проекта</h4>
+                    <div class="member">
+                        <div class="member-avatar">ЛС</div>
+                        <div class="member-info">
+                            <div class="member-name">Левчук Святослав</div>
+                            <div class="member-role">Конструктор</div>
+                        </div>
+                    </div>
+                    <div class="member">
+                        <div class="member-avatar">КА</div>
+                        <div class="member-info">
+                            <div class="member-name">Корольков Александр</div>
+                            <div class="member-role">Электронщик</div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="specs-table">
+                    <tr><td>Количество осей</td><td>3</td></tr>
+                    <tr><td>Габариты</td><td>530 × 250 × 550 мм</td></tr>
+                    <tr><td>Вес</td><td>~8000 г</td></tr>
+                    <tr><td>Тип передачи</td><td>Коническая зубчатая, ременная</td></tr>
+                    <tr><td>Двигатели</td><td>FL42STH47-0806B (NEMA 17, 3.17 кг·см)</td></tr>
+                    <tr><td>Питание</td><td>24В, 100Вт</td></tr>
+                    <tr><td>Управление</td><td>Проводной пульт</td></tr>
+                    <tr><td>Максимальная нагрузка</td><td>100 г</td></tr>
+                </table>
+
+                <h4 style="margin: 16px 0 8px; font-size: 0.95rem;">Электронная часть</h4>
+                <table class="specs-table">
+                    <tr><td>Логика</td><td>K176, CD40xx, HEF4093, K155</td></tr>
+                    <tr><td>Силовая часть</td><td>MOSFET AO4606, AO3400A</td></tr>
+                    <tr><td>ИК-приёмник</td><td>TSOP31238 (38кГц, 45 м)</td></tr>
+                    <tr><td>Преобразователь</td><td>XI4016 (3.5В–40В → 1.25В–35В)</td></tr>
+                </table>
+
+                <button class="pdf-btn" onclick="openPdf('projects/project-04-electromechanical-manipulator/docs/drawing-views.pdf', 'Чертёж манипулятора')">
+                    <i class="fas fa-file-pdf"></i> Чертёж манипулятора
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Project 05 -->
+    <div class="modal-overlay" id="modal-05">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>techman-js</h3>
+                <button class="modal-close" onclick="closeModal('modal-05')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p class="project-desc">
+                    TypeScript-библиотека для управления промышленным коботом Techman Robot TM5-700 по протоколу TCP/IP через интерфейс Listen Node. Реализует самостоятельную сборку бинарных пакетов, расчёт контрольных сумм (XOR), валидацию длины данных и парсинг ответов робота — без использования сторонних SDK.
+                </p>
+
+                <div class="team-block">
+                    <h4><i class="fas fa-users"></i> Участники проекта</h4>
+                    <div class="member">
+                        <div class="member-avatar">НМ</div>
+                        <div class="member-info">
+                            <div class="member-name">Новик Матвей</div>
+                            <div class="member-role">Программист, автор библиотеки</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Архитектура</h4>
+                <div class="diagram-container">
+                    <img src="projects/project-05-techman-js/diagrams/class-diagramjpg" alt="Диаграмма классов" style="max-height: 400px;">
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Пример: tm-script-client.ts</h4>
+                <div class="code-block">
+                    <pre><code class="language-typescript">import { IConnection, ParsedTMSCT } from '../types/index.js';
+import { TMSCTBuilder } from '../protocol/builders/TMSCTBuilder.js';
+
+export class TMScriptClient {
+  constructor(private connection: IConnection) {}
+  
+  async ptp(target: number[], format: 'JPP' | 'CPP', 
+            speed = 5, accelMs = 200, blend = 0) {
+    const packet = this.motion.PTP(target, format, speed, accelMs, blend);
+    return this.connection.execute&lt;ParsedTMSCT&gt;(packet);
+  }
+}</code></pre>
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Пример: packet-builder.ts</h4>
+                <div class="code-block">
+                    <pre><code class="language-typescript">export class PacketBuilder implements IPacketBuilder {
+  build(header: TMHeader, payload: string): BuiltPacket {
+    const generatedId = this.generateId();
+    const data = `${generatedId},${payload}`;
+    const length = this.calculateByteLength(data);
+    const content = `${header},${length},${data},`;
+    const checksum = this.calculateChecksum(content);
+    return { raw: `$${content}*${checksum}\r\n`, id: generatedId };
+  }
+  
+  private calculateChecksum(data: string): string {
+    const buffer = Buffer.from(data, 'utf8');
+    let checksum = 0;
+    for (let i = 0; i < buffer.length; i++) {
+      checksum ^= buffer[i];
+    }
+    return checksum.toString(16).toUpperCase().padStart(2, '0');
+  }
+}</code></pre>
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Поддерживаемые пакеты</h4>
+                <table class="specs-table">
+                    <tr><td>TMSCT (Script)</td><td>Команды движения (PTP, Line, Circle)</td></tr>
+                    <tr><td>TMSTA (Status)</td><td>Запрос состояния Listen Node</td></tr>
+                    <tr><td>TMSVR (Value)</td><td>Чтение/запись переменных робота</td></tr>
+                    <tr><td>CPERR (Error)</td><td>Обработка протокольных ошибок</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Project 06 -->
+    <div class="modal-overlay" id="modal-06">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>TMWriter</h3>
+                <button class="modal-close" onclick="closeModal('modal-06')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p class="project-desc">
+                    Fullstack-приложение, превращающее промышленного робота TM5-700 в векторный графопостроитель. Принимает произвольный текст из веб-интерфейса, рассчитывает его геометрию по сетке поля и транслирует в траектории движения манипулятора. Работает в связке с библиотекой techman-js.
+                </p>
+
+                <div class="team-block">
+                    <h4><i class="fas fa-users"></i> Участники проекта</h4>
+                    <div class="member">
+                        <div class="member-avatar">НМ</div>
+                        <div class="member-info">
+                            <div class="member-name">Новик Матвей</div>
+                            <div class="member-role">Программист, fullstack-разработка</div>
+                        </div>
+                    </div>
+                    <div class="member">
+                        <div class="member-avatar" style="background: var(--text-secondary)">?</div>
+                        <div class="member-info">
+                            <div class="member-name">Дизайнер</div>
+                            <div class="member-role">Неизвестен</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Интерфейс приложения</h4>
+                <div class="diagram-container">
+                    <img src="projects/project-06-tmwriter/design/interface-screenshot.svg" alt="Интерфейс TMWriter" style="max-height: 400px; background: #F8FAFD;">
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Диаграмма последовательности</h4>
+                <div class="diagram-container">
+                    <img src="projects/project-06-tmwriter/diagrams/sequence-diagram.jpg" alt="Диаграмма последовательности" style="max-height: 400px;">
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Пример: server.ts</h4>
+                <div class="code-block">
+                    <pre><code class="language-typescript">import express from 'express';
+import { runRobotProcess } from './runRobotProcess.js';
+import { textToCellMap } from './textMapper.js';
+
+const app = express();
+app.use(express.json());
+
+app.post('/api/command', async (req, res) => {
+  const { text, fontSize } = req.body;
+  const scale = Number(fontSize) || 1;
+  
+  if (robotStatus.isBusy) {
+    return res.status(409).json({ error: 'Занято' });
+  }
+  
+  const settings = await getValidatedSettings();
+  const fontData = JSON.parse(await readFile(fontPath, 'utf-8'));
+  const layout = textToCellMap(text, scale, fontData, settings);
+  
+  robotStatus.isBusy = true;
+  runRobotProcess(text, scale, settings, fontData);
+  res.json({ status: 'started', cellsCount: layout.length });
+});</code></pre>
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Пример: textMapper.ts</h4>
+                <div class="code-block">
+                    <pre><code class="language-typescript">export function textToCellMap(text: string, scale: number, 
+                               font: FontData, settings: RobotSettings) {
+  const { x: fieldX, y: fieldY } = settings.fieldSize;
+  const scaledWidth = font.charWidth * scale;
+  const scaledHeight = font.charHeight * scale;
+  const cellCountX = Math.floor(fieldX / scaledWidth);
+  const cellCountY = Math.floor(fieldY / scaledHeight);
+  
+  const words = text.split(/\s+/).filter(w => w.length > 0);
+  const result: CharCell[] = [];
+  let currentX = 0;
+  let currentY = cellCountY - 1;
+  
+  for (const word of words) {
+    if (currentX + word.length > cellCountX) {
+      currentY--; currentX = 0;
+    }
+    for (const char of word) {
+      result.push({
+        char, x_index: currentX, y_index: currentY,
+        abs_x: currentX * scaledWidth,
+        abs_y: currentY * scaledHeight
+      });
+      currentX++;
+    }
+  }
+  return result;
+}</code></pre>
+                </div>
+
+                <h4 style="margin-bottom: 8px; font-size: 0.95rem;">Ключевая функциональность</h4>
+                <table class="specs-table">
+                    <tr><td>Векторные шрифты</td><td>JSON-формат с командами line, blend, circle</td></tr>
+                    <tr><td>Маппинг текста</td><td>Автоматический перенос по границам поля</td></tr>
+                    <tr><td>Canvas предпросмотр</td><td>Имитация траектории в реальном времени</td></tr>
+                    <tr><td>Конвейер буфера</td><td>Асинхронная подача команд (15 QueueTag)</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Project 07 -->
+    <div class="modal-overlay" id="modal-07">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Отчет-портфолио</h3>
+                <button class="modal-close" onclick="closeModal('modal-07')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <img src="projects/project-07-design-portfolio/images/preview.png" alt="Обложка портфолио" style="width: 100%; border-radius: 8px; margin-bottom: 16px;">
+
+                <p class="project-desc">
+                    Дизайнерский отчёт-портфолио, систематизирующий результаты внеучебного проекта по промышленным роботам-манипуляторам. Выполнен в формате профессионального портфолио с инфографикой, визуализацией 3D-моделей и структурированным представлением технических данных.
+                </p>
+
+                <div class="team-block">
+                    <h4><i class="fas fa-users"></i> Участники проекта</h4>
+                    <div class="member">
+                        <div class="member-avatar" style="background: var(--text-secondary)">?</div>
+                        <div class="member-info">
+                            <div class="member-name">Дизайнер</div>
+                            <div class="member-role">Неизвестен</div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="specs-table">
+                    <tr><td>Учреждение</td><td>ГрГУ им. Янки Купалы, ФТФ</td></tr>
+                    <tr><td>Год</td><td>2026</td></tr>
+                    <tr><td>Формат</td><td>Профессиональное портфолио</td></tr>
+                    <tr><td>Содержание</td><td>7 проектов серии «Промышленные роботы»</td></tr>
+                </table>
+
+                <button class="pdf-btn" onclick="openPdf('projects/project-07-design-portfolio/docs/portfolio.pdf', 'Отчет-портфолио')">
+                    <i class="fas fa-file-pdf"></i> Открыть портфолио
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Demo (Планетарный редуктор) -->
+    <div class="modal-overlay" id="modal-demo">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Планетарный редуктор (Демонстрация)</h3>
+                <button class="modal-close" onclick="closeModal('modal-demo')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <model-viewer 
+                    src="https://modelviewer.dev/shared-assets/models/Astronaut.glb" 
+                    camera-controls touch-action="pan-y" auto-rotate
+                    class="viewer-3d">
+                </model-viewer>
+                <p class="project-desc">
+                    Демонстрационный пример отображения проекта с интерактивной 3D-моделью. В реальных проектах здесь будут ваши модели.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Состав команды -->
+    <div class="modal-overlay" id="modal-team">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="team-modal-title">Команда</h3>
+                <button class="modal-close" onclick="closeModal('modal-team')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <p class="project-desc" id="team-modal-desc"></p>
+                <h4 class="subheading">Состав команды</h4>
+                <div id="team-members-list"></div>
+                <button class="btn-primary" style="margin-top:16px"
+                    onclick="showToast('Демо-режим: отклик на участие будет доступен после подключения серверной части')">
+                    <i class="fas fa-hand-paper"></i> Откликнуться
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Создание команды -->
+    <div class="modal-overlay" id="modal-create-team">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Новая команда</h3>
+                <button class="modal-close" onclick="closeModal('modal-create-team')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <form id="create-team-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label>Название команды</label>
+                        <input class="form-control" id="new-team-name" required placeholder="Например: Мехатроника">
+                    </div>
+                    <div class="form-group">
+                        <label>Направление</label>
+                        <input class="form-control" id="new-team-direction" required placeholder="Конструирование · Электроника">
+                    </div>
+                    <div class="form-group">
+                        <label>Описание задачи</label>
+                        <textarea class="form-control" id="new-team-desc" placeholder="Что будет разрабатывать команда"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fas fa-plus"></i> Создать</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Редактирование профиля -->
+    <div class="modal-overlay" id="modal-edit-profile">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Редактирование профиля</h3>
+                <button class="modal-close" onclick="closeModal('modal-edit-profile')">&times;</button>
+            </div>
+            <div class="modal-content">
+                <form id="edit-profile-form" onsubmit="return false;">
+                    <div class="form-group">
+                        <label>ФИО</label>
+                        <input class="form-control" id="edit-name" placeholder="Имя Фамилия">
+                    </div>
+                    <div class="form-group">
+                        <label>Роль / специализация</label>
+                        <input class="form-control" id="edit-role" placeholder="Конструктор, разработчик, дизайнер">
+                    </div>
+                    <div class="form-group">
+                        <label>Курс и группа</label>
+                        <input class="form-control" id="edit-course" placeholder="3 курс, группа">
+                    </div>
+                    <div class="form-group">
+                        <label>О себе</label>
+                        <textarea class="form-control" id="edit-about" placeholder="Кратко о вашем опыте и интересах"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary"><i class="fas fa-check"></i> Сохранить</button>
+                    <p style="font-size:.75rem;color:var(--text-secondary);margin-top:12px">
+                        Данные сохраняются локально в браузере — это демонстрационный прототип.
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Viewer Modal -->
+    <div class="pdf-viewer-modal" id="pdf-modal">
+        <div class="pdf-container">
+            <div class="pdf-header">
+                <h3 id="pdf-title">Документ</h3>
+                <button class="modal-close" onclick="closePdf()">&times;</button>
+            </div>
+            <div class="pdf-content" id="pdf-content">
+                <div class="pdf-loading" id="pdf-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <div>Загрузка документа...</div>
+                </div>
+                <div class="pdf-canvas-container" id="pdf-canvas-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <nav class="bottom-nav">
+        <a href="#feed" class="nav-item active" data-page="feed"><i class="fas fa-home"></i> Лента</a>
+        <a href="#mine" class="nav-item" data-page="mine"><i class="fas fa-folder-plus"></i> Мои</a>
+        <a href="#teams" class="nav-item" data-page="teams"><i class="fas fa-users"></i> Команды</a>
+        <a href="#profile" class="nav-item" data-page="profile"><i class="fas fa-user"></i> Профиль</a>
+    </nav>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        hljs.highlightAll();
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Закрытие по клику на overlay — только если клик именно по overlay
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+
+        // Предотвращаем всплытие кликов из модалки до overlay
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        });
+
+        function switchModel(projectId, modelName, btn) {
+            const viewer = document.getElementById(`model-${projectId}`);
+            const paths = {
+                '01': 'projects/project-01-universal-gripper-tm5/models/',
+                '02': 'projects/project-02-modular-constructor/models/',
+                '03': 'projects/project-03-mechanical-manipulator/models/',
+                '04': 'projects/project-04-electromechanical-manipulator/models/'
+            };
+            
+            viewer.src = paths[projectId] + modelName;
+            
+            btn.parentElement.querySelectorAll('.model-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        async function openPdf(url, title) {
+            document.getElementById('pdf-title').textContent = title;
+            document.getElementById('pdf-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            const loadingDiv = document.getElementById('pdf-loading');
+            const containerDiv = document.getElementById('pdf-canvas-container');
+            
+            loadingDiv.style.display = 'block';
+            containerDiv.innerHTML = '';
+            
+            try {
+                const pdf = await pdfjsLib.getDocument(url).promise;
+                loadingDiv.style.display = 'none';
+                
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+                    
+                    await page.render({ canvasContext: context, viewport: viewport }).promise;
+                    containerDiv.appendChild(canvas);
+                }
+            } catch (error) {
+                loadingDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i><div>Ошибка загрузки документа</div>';
+                console.error('PDF.js error:', error);
+            }
+        }
+
+        function closePdf() {
+            document.getElementById('pdf-modal').classList.remove('active');
+            document.getElementById('pdf-canvas-container').innerHTML = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('pdf-modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('pdf-modal')) {
+                closePdf();
+            }
+        });
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const filter = tab.dataset.filter;
+                const cards = document.querySelectorAll('.card');
+                
+                cards.forEach(card => {
+                    const categories = card.dataset.categories.split(' ');
+                    if (filter === 'all' || categories.includes(filter)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Блокируем свайп при взаимодействии с 3D-моделью и формами
+        document.querySelectorAll('.viewer-3d, model-viewer, .form-control, .modal-content').forEach(el => {
+            el.addEventListener('touchstart', (e) => {
+                e.stopPropagation();
+            }, { passive: true });
+            
+            el.addEventListener('touchmove', (e) => {
+                e.stopPropagation();
+            }, { passive: true });
+            
+            el.addEventListener('touchend', (e) => {
+                e.stopPropagation();
+            }, { passive: true });
+        });
+
+        // Свайп вниз для закрытия модального окна
+        let touchStartY = 0;
+        let touchCurrentY = 0;
+        let isSwiping = false;
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('touchstart', (e) => {
+                if (e.target.closest('.viewer-3d') || e.target.closest('model-viewer') || e.target.closest('.form-control')) {
+                    isSwiping = false;
+                    return;
+                }
+                touchStartY = e.touches[0].clientY;
+                isSwiping = true;
+            }, { passive: true });
+
+            modal.addEventListener('touchmove', (e) => {
+                if (!isSwiping) return;
+                if (e.target.closest('.viewer-3d') || e.target.closest('model-viewer') || e.target.closest('.form-control')) {
+                    isSwiping = false;
+                    return;
+                }
+                touchCurrentY = e.touches[0].clientY;
+                const diff = touchCurrentY - touchStartY;
+                
+                if (diff > 0 && modal.scrollTop === 0) {
+                    modal.style.transform = `translateY(${diff}px)`;
+                    modal.style.opacity = 1 - (diff / 500);
+                }
+            }, { passive: true });
+
+            modal.addEventListener('touchend', () => {
+                if (!isSwiping) return;
+                isSwiping = false;
+                
+                const diff = touchCurrentY - touchStartY;
+                
+                if (diff > 100 && modal.scrollTop === 0) {
+                    const overlay = modal.closest('.modal-overlay');
+                    overlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+                
+                modal.style.transform = '';
+                modal.style.opacity = '';
+            });
+        });
+
+        /* ================= НАВИГАЦИЯ ПО РАЗДЕЛАМ ================= */
+        function navigateTo(page) {
+            document.querySelectorAll('.page').forEach(p => {
+                p.hidden = (p.id !== 'page-' + page);
+            });
+            const feedTabs = document.getElementById('feed-tabs');
+            if (feedTabs) feedTabs.hidden = (page !== 'feed');
+
+            document.querySelectorAll('[data-page]').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.page === page);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.querySelectorAll('[data-page]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo(btn.dataset.page);
+            });
+        });
+
+        /* ================= УВЕДОМЛЕНИЯ ================= */
+        let toastTimer;
+        function showToast(text) {
+            const el = document.getElementById('toast');
+            el.textContent = text;
+            el.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, s => ({
+                '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+            }[s]));
+        }
+
+        /* ================= ДАННЫЕ ================= */
+        const teamsData = [
+            {
+                id: 'engineering',
+                title: 'Инженерная команда',
+                direction: 'Конструирование · Электроника · КОМПАС-3D',
+                icon: 'fa-gears',
+                description: 'Проектирование манипуляторов, захватных устройств и приводных механизмов. Расчёт передач, подготовка чертежей по ЕСКД.',
+                members: [
+                    { name: 'Коротинская Лаура', role: 'Электронщик', initials: 'КЛ' },
+                    { name: 'Кольга Евгения', role: 'Конструктор', initials: 'КЕ' },
+                    { name: 'Клинковский Марк', role: 'Конструктор', initials: 'КМ' },
+                    { name: 'Вольщук Максим', role: 'Конструктор', initials: 'ВМ' },
+                    { name: 'Волынец Артём', role: 'Конструктор', initials: 'ВА' },
+                    { name: 'Левчук Святослав', role: 'Конструктор', initials: 'ЛС' }
+                ]
+            },
+            {
+                id: 'electronics',
+                title: 'Электроника',
+                direction: 'Схемотехника · Платы',
+                icon: 'fa-microchip',
+                description: 'Разработка электронных плат управления, силовой части и систем связи для манипуляторов.',
+                members: [
+                    { name: 'Коротинская Лаура', role: 'Электронщик', initials: 'КЛ' },
+                    { name: 'Корольков Александр', role: 'Электронщик', initials: 'КА' }
+                ]
+            },
+            {
+                id: 'it',
+                title: 'IT-команда',
+                direction: 'TypeScript · Node.js · TCP/IP',
+                icon: 'fa-code',
+                description: 'Разработка библиотек взаимодействия с роботами, серверной логики и веб-интерфейсов управления.',
+                members: [
+                    { name: 'Новик Матвей', role: 'Программист', initials: 'НМ' }
+                ]
+            },
+            {
+                id: 'design',
+                title: 'Дизайн-команда',
+                direction: 'UI/UX · Инфографика · Верстка',
+                icon: 'fa-palette',
+                description: 'Интерфейсы приложений, визуализация технических решений, оформление отчётов и презентационных материалов.',
+                members: []
+            }
+        ];
+
+        // Универсальная насадка убрана — Матвей в ней не участвовал
+        const myProjects = [
+            { modalId: 'modal-05', title: 'techman-js', meta: 'TypeScript библиотека · v2.0.3' },
+            { modalId: 'modal-06', title: 'TMWriter', meta: 'Fullstack веб-приложение · v2.0.1' }
+        ];
+
+        /* ================= КОМАНДЫ ================= */
+        function renderTeams() {
+            const grid = document.getElementById('teams-grid');
+            grid.innerHTML = teamsData.map(team => {
+                const avatars = team.members.length
+                    ? team.members.slice(0, 4).map(m =>
+                        `<div class="avatar" title="${escapeHtml(m.name)}">${escapeHtml(m.initials || '?')}</div>`).join('')
+                    : '<div class="avatar empty"><i class="fas fa-user-plus"></i></div>'.repeat(3);
+
+                return `
+                <div class="team-card">
+                    <div class="team-icon"><i class="fas ${team.icon}"></i></div>
+                    <h3>${escapeHtml(team.title)}</h3>
+                    <div class="team-direction">${escapeHtml(team.direction)}</div>
+                    <div class="avatar-stack">${avatars}</div>
+                    <div class="team-direction">
+                        ${team.members.length ? team.members.length + ' участн.' : 'Состав будет заполнен'}
+                    </div>
+                    <div class="team-footer">
+                        <span class="team-status"><i class="fas fa-circle" style="font-size:.4rem"></i> Открыта</span>
+                        <button class="btn-secondary" onclick="openTeam('${team.id}')">Состав команды</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openTeam(id) {
+            const team = teamsData.find(t => String(t.id) === String(id));
+            if (!team) return;
+            document.getElementById('team-modal-title').textContent = team.title;
+            document.getElementById('team-modal-desc').textContent = team.description;
+
+            const list = document.getElementById('team-members-list');
+            if (!team.members.length) {
+                list.innerHTML = `
+                    <div class="empty-card">
+                        <i class="fas fa-users"></i>
+                        <h4>Участники не добавлены</h4>
+                        <p>Состав команды будет заполнен на следующем этапе.</p>
+                    </div>`;
+            } else {
+                list.innerHTML = team.members.map(m => `
+                    <div class="member-row">
+                        <div class="member-avatar" style="margin:0;border:none">${escapeHtml(m.initials || '?')}</div>
+                        <div>
+                            <div class="member-name">${escapeHtml(m.name)}</div>
+                            <div class="member-role">${escapeHtml(m.role)}</div>
+                        </div>
+                    </div>`).join('');
+            }
+            openModal('modal-team');
+        }
+
+        document.getElementById('create-team-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-team-name').value.trim();
+            const direction = document.getElementById('new-team-direction').value.trim();
+            const desc = document.getElementById('new-team-desc').value.trim();
+            if (!name || !direction) return;
+
+            teamsData.push({
+                id: 'custom-' + Date.now(),
+                title: name, direction, icon: 'fa-users',
+                description: desc || 'Описание команды будет добавлено.',
+                members: []
+            });
+            renderTeams();
+            closeModal('modal-create-team');
+            e.target.reset();
+            showToast('Команда создана. Данные действуют до перезагрузки страницы.');
+        });
+
+        /* ================= МОИ ПРОЕКТЫ ================= */
+        function renderMyProjects() {
+            const list = document.getElementById('my-projects-list');
+            document.getElementById('stat-my-total').textContent = myProjects.length || '—';
+            document.getElementById('stat-my-done').textContent = myProjects.length || '—';
+            document.getElementById('stat-my-teams').textContent =
+                teamsData.filter(t => t.members.some(m => m.initials === 'НМ')).length || '—';
+
+            if (!myProjects.length) return;
+
+            list.innerHTML = '<div class="grid">' + myProjects.map(p => `
+                <div class="card" onclick="openModal('${p.modalId}')">
+                    <div class="card-body">
+                        <div class="card-title">${escapeHtml(p.title)}</div>
+                        <div class="card-meta">${escapeHtml(p.meta)}</div>
+                        <span class="tag">Открыть проект <i class="fas fa-arrow-right"></i></span>
+                    </div>
+                </div>`).join('') + '</div>';
+        }
+
+        /* ================= ПРОФИЛЬ ================= */
+        function applyProfile(data) {
+            if (data.name) document.getElementById('profile-name').textContent = data.name;
+            if (data.role) document.getElementById('profile-role').textContent = data.role;
+            if (data.course) document.getElementById('profile-course').textContent = data.course;
+            if (data.about) document.getElementById('profile-about').textContent = data.about;
+        }
+
+        try {
+            const saved = JSON.parse(localStorage.getItem('unirepo-profile') || 'null');
+            if (saved) applyProfile(saved);
+        } catch (_) {}
+
+        document.getElementById('edit-profile-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('edit-name').value.trim(),
+                role: document.getElementById('edit-role').value.trim(),
+                course: document.getElementById('edit-course').value.trim(),
+                about: document.getElementById('edit-about').value.trim()
+            };
+            try { localStorage.setItem('unirepo-profile', JSON.stringify(data)); } catch (_) {}
+            applyProfile(data);
+            closeModal('modal-edit-profile');
+            showToast('Профиль сохранён в этом браузере');
+        });
+
+        /* ================= ИНИЦИАЛИЗАЦИЯ ================= */
+        renderTeams();
+        renderMyProjects();
+    </script>
+</body>
+</html>
